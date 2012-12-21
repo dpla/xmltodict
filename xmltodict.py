@@ -40,6 +40,8 @@ class _DictSAXHandler(object):
                  cdata_key='#text',
                  force_cdata=False,
                  cdata_separator='',
+                 ignore_whitespace_cdata=False,
+                 skip_cdata=False,
                  postprocessor=None,
                  dict_constructor=OrderedDict):
         self.path = []
@@ -53,6 +55,8 @@ class _DictSAXHandler(object):
         self.cdata_key = cdata_key
         self.force_cdata = force_cdata
         self.cdata_separator = cdata_separator
+        self.ignore_whitespace_cdata = ignore_whitespace_cdata
+        self.skip_cdata = skip_cdata
         self.postprocessor = postprocessor
         self.dict_constructor = dict_constructor
 
@@ -83,8 +87,9 @@ class _DictSAXHandler(object):
             if data and self.force_cdata and item is None:
                 item = self.dict_constructor()
             if item is not None:
-                if data:
-                    item[self.cdata_key] = data
+                if data and not self.skip_cdata:
+                    if (not self.ignore_whitespace_cdata) or (self.ignore_whitespace_cdata and not data.isspace()):
+                        item[self.cdata_key] = data
                 self.push_data(name, item)
             else:
                 self.push_data(name, data)
